@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>라벨오프 — 붙이기 전에, 제대로 알기</title>
+  <meta name="description" content="당신에게는 어떤 라벨이 붙어있나요? 우울증, ADHD, 회피형, 외모정병… 나를 한 단어로 규정하기 전에 제대로 알아보는 곳. 2026년 12월 31일까지 한정 운영.">
+  <meta property="og:title" content="라벨오프 — 당신에게는 어떤 라벨이 붙어있나요?">
+  <meta property="og:description" content="붙이기 전에, 제대로 알기. 12월 31일까지만 열려요.">
+  <meta property="og:type" content="website">
+  <!-- 사이트 주소가 바뀌면 og:url과 og:image도 같은 주소로 바꿔야 카카오톡·인스타그램 미리보기가 떠요. -->
+  <meta property="og:url" content="https://ilikewon.github.io/labeloff/">
+  <meta property="og:image" content="https://ilikewon.github.io/labeloff/img/og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#1E3A2D">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Gaegu:wght@400;700&family=Noto+Sans+KR:wght@400;600;700;800;900&display=swap">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="top">
+    <div class="wrap top-in">
+      <a class="logo" href="#/" aria-label="라벨오프 홈"><span class="logo-a">LABEL</span><span class="logo-b">OFF</span></a>
+      <nav class="nav" aria-label="주요 메뉴">
+        <a href="#/pick" data-r="pick">라벨 고르기</a>
+        <a href="#/state" data-r="state">상태카드</a>
+        <a href="#/board" data-r="board">포스트잇</a>
+        <a href="#/learn" data-r="learn">강연</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="app"></main>
+
+  <footer class="foot">
+    <div class="wrap">
+      <p class="foot-brand">LABEL OFF · 라벨 제대로 알기</p>
+      <p>이 사이트는 진단 도구가 아닙니다. 자가 체크 결과는 의학적 진단을 대신하지 않습니다.</p>
+      <p class="foot-help">지금 많이 힘들다면 <a href="tel:109"><b>자살예방상담전화 109</b></a> (24시간) · <a href="tel:15770199"><b>정신건강위기상담 1577-0199</b></a></p>    </div>
+  </footer>
+
+  <div id="toast" role="status" aria-live="polite"></div>
+
+  <script src="firebase-config.js"></script>
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

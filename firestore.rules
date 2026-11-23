@@ -1,0 +1,40 @@
+rules_version = '2';
+
+// 누구나 읽고 새 글을 쓸 수 있지만, 이미 쓴 글을 고치거나 지울 수는 없어요.
+// 글자 수와 항목을 검사해서 이상한 데이터가 저장되지 않게 막아요.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function okText(v, max) { return v is string && v.size() > 0 && v.size() <= max; }
+    function okColor(c) { return c in ['p1', 'p2', 'p3', 'p4', 'p5']; }
+
+    match /spaces/{spaceId} {
+      allow read: if true;
+      allow create: if request.resource.data.keys().hasOnly(['nick', 'text', 'k', 't'])
+        && okText(request.resource.data.nick, 12)
+        && okText(request.resource.data.text, 80)
+        && okText(request.resource.data.k, 20)
+        && request.resource.data.t is number;
+      allow update, delete: if false;
+
+      match /notes/{noteId} {
+        allow read: if true;
+        allow create: if request.resource.data.keys().hasOnly(['text', 'from', 'c', 't'])
+          && okText(request.resource.data.text, 120)
+          && request.resource.data.from is string && request.resource.data.from.size() <= 12
+          && okColor(request.resource.data.c)
+          && request.resource.data.t is number;
+        allow update, delete: if false;
+      }
+    }
+
+    match /boards/{labelId}/posts/{postId} {
+      allow read: if true;
+      allow create: if request.resource.data.keys().hasOnly(['text', 'c', 't'])
+        && okText(request.resource.data.text, 120)
+        && okColor(request.resource.data.c)
+        && request.resource.data.t is number;
+      allow update, delete: if false;
+    }
+  }
+}

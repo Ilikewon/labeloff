@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 110">
+  <defs><clipPath id="box"><rect x="14" y="44" width="72" height="62"/></clipPath></defs>
+  <rect x="14" y="44" width="72" height="62" fill="#2E7D4F"/>
+  <g clip-path="url(#box)" fill="none" stroke="#FFF8E8" stroke-width="4" stroke-linecap="round">
+    <path d="M10 58 q9 -6 18 0 t18 0 t18 0 t18 0 t18 0"/>
+    <path d="M10 72 q9 -6 18 0 t18 0 t18 0 t18 0 t18 0"/>
+    <path d="M10 86 q9 -6 18 0 t18 0 t18 0 t18 0 t18 0"/>
+    <path d="M10 100 q9 -6 18 0 t18 0 t18 0 t18 0 t18 0"/>
+  </g>
+  <rect x="8" y="30" width="84" height="16" rx="2" fill="#F2C14E"/>
+  <g fill="none" stroke="#D7322A" stroke-width="4">
+    <ellipse cx="38" cy="18" rx="13" ry="8" transform="rotate(-20 38 18)"/>
+    <ellipse cx="62" cy="18" rx="13" ry="8" transform="rotate(20 62 18)"/>
+  </g>
+  <circle cx="50" cy="24" r="5" fill="#D7322A"/>
+</svg>
