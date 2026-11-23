@@ -79,6 +79,32 @@
   const daysLeft = () => Math.max(0, Math.ceil((LAST_DAY - Date.now()) / 86400000));
   const dLabel = () => (daysLeft() ? `D-${daysLeft()}` : 'D-DAY');
   const baseUrl = () => location.href.split('#')[0];
+  // Keep a number glued to the word it belongs to, so a line never breaks between "최대" and "3개".
+  const GLUE = [
+    [/(^|[\s('"“‘])(최대|최소|하루|매일|매주|주|총|약|첫|\d+년|\d+월) (\d)/g, '$1$2 $3'],
+    [/(\d\S*) (이상|이하|미만|이내|동안|정도|중)(?=[\s,.)'"”’]|$)/g, '$1 $2'],
+    [/(\d) (일|주|개월|시간|회|점|개|명)/g, '$1 $2'],
+    [/(\S) (수|때|줄|뿐|듯|만큼)(?=[\s,.]|$)/g, '$1 $2'],
+    [/(수|줄) (있|없|알)/g, '$1 $2'],
+    [/([가-힣A-Za-z])·([가-힣A-Za-z])/g, '$1⁠·⁠$2'],
+  ];
+  // Short guide text starts each sentence on its own line (these elements use white-space: pre-line).
+  const SENTENCE_BLOCKS = '.sub, .lead, .group-sub, .sw-note, .hint-note, .after-box > p, .invite p, .newyear p, .advice p, .peel-after, .lec-body p:not(.lec-meta)';
+  function glue(root) {
+    if (!root) return;
+    if (root.nodeType === 3) root = root.parentNode;
+    if (!root || !root.ownerDocument) return;
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+    for (let n = walker.nextNode(); n; n = walker.nextNode()) {
+      let t = n.nodeValue;
+      GLUE.forEach(([re, to]) => { t = t.replace(re, to); });
+      if (n.parentElement && n.parentElement.closest(SENTENCE_BLOCKS)) t = t.replace(/([.…?!]["”']?)[  ]+(?=\S)/g, '$1\n');
+      if (t !== n.nodeValue) n.nodeValue = t;
+    }
+  }
+  new MutationObserver((muts) => muts.forEach((m) => m.addedNodes.forEach(glue))).observe(document.body, { childList: true, subtree: true });
+  glue(document.body);
+
   let tick;
   let renderId = 0;
   let cleanups = [];
@@ -141,7 +167,7 @@
 
   function stateCardHtml(s, nick, text) {
     return `<div class="statwin statecard">
-      <div class="sc-top"><span class="sw-tag">[ 상태창 ]</span><span class="sc-nick">${esc(nick)}</span></div>
+      <div class="sc-top"><span class="sw-tag">상태창</span><span class="sc-nick">${esc(nick)}</span></div>
       <p class="sc-label">현재 상태</p>
       <h3 class="sc-name"><span class="sticker sm c-${s.color}">${esc(s.name)}</span></h3>
       <div class="hp"><span>마음 에너지</span><span class="hp-bar"><i style="width:${s.hp}%"></i></span><span class="hp-num">${s.hp}</span></div>
@@ -165,39 +191,32 @@
           <h1>당신에게는<br>어떤 <em>라벨</em>이<br>붙어있나요?</h1>
           <p class="lead">우울증, ADHD, 회피형, 외모정병, 에겐·테토… 요즘 우리는 나를 한 단어로 너무 쉽게 설명해요. 붙이기 전에, 제대로 알아봐요.</p>
           <div class="cta-row">
-            <a class="btn primary" href="#/pick">내 라벨 확인하기</a>
+            <a class="btn primary" href="#/pick">내 라벨 고르기</a>
             <a class="btn ghost" href="#/state">상태카드 만들기</a>
           </div>
         </div>
-        <div class="cloud" aria-label="자주 쓰이는 라벨">${cloud}</div>
-      </section>
-
-      <section class="wrap section">
-        <h2 class="sec-title">라벨 떼기는 이렇게 진행돼요</h2>
-        <ol class="steps">
-          <li><span class="num">1</span><h3>고르기</h3><p>나에게 붙어있는 라벨을 최대 3개까지 골라요.</p></li>
-          <li><span class="num">2</span><h3>상태창 열기</h3><p>그 단어의 어원과 진짜 뜻, 흔한 오해를 확인해요.</p></li>
-          <li><span class="num">3</span><h3>떼어내기</h3><p>진단명은 <b>제대로 알아보기</b>로, 유행어는 직접 떼어내고 그 안의 메시지를 만나요.</p></li>
-        </ol>
+        <div class="cloud-wrap">
+          <p class="hand-note">여기서 바로 눌러도 돼요 ↓</p>
+          <div class="cloud" aria-label="자주 쓰이는 라벨">${cloud}</div>
+        </div>
       </section>
 
       <section class="wrap section">
         <div class="criteria">
-          <p class="sw-tag">[ 알아두기 ]</p>
-          <h2>특징이 몇 개 맞느냐가 아니라</h2>
-          <div class="crit-pills"><span>기간</span><span>빈도</span><span>일상 지장</span></div>
-          <p>"우울증 특징 7가지" 같은 콘텐츠에 몇 개가 해당되는지보다, 그 상태가 <b>얼마나 오래</b>, <b>얼마나 자주</b>, <b>내 생활을 얼마나 흔드는지</b>가 진짜 기준이에요.</p>
-          <a class="btn glow" href="#/learn">강연·교육 보기</a>
+          <h2>병원에서 먼저 묻는 세 가지</h2>
+          <div class="crit-pills"><span>언제부터?</span><span>얼마나 자주?</span><span>생활이 흔들렸나?</span></div>
+          <p>체크리스트에 몇 개 해당되는지는 그다음 문제예요. 의사들은 그 상태가 얼마나 오래 갔는지, 얼마나 자주 그런지, 그것 때문에 학교나 일, 사람 관계가 얼마나 힘들어졌는지를 먼저 봐요.</p>
+          <a class="btn glow" href="#/learn">관련 영상 보기</a>
         </div>
       </section>
 
       <section class="wrap section split">
         <div>
-          <h2 class="sec-title">라벨 말고, 지금 '상태'로 말해요</h2>
-          <p class="sub">"나 우울증인가 봐" 대신 "요즘 배터리가 부족해". 상태카드로 내 상태방을 만들어 링크를 보내면, 친구들이 롤링페이퍼처럼 따뜻한 한마디를 남겨줘요.</p>
-          <a class="btn primary" href="#/state">내 상태카드 만들기</a>
+          <h2 class="sec-title">요즘 어때요? 한 줄이면 돼요</h2>
+          <p class="sub">"나 우울증인가 봐" 대신 "요즘 잠을 못 자서 피곤해"처럼요. 상태카드를 만들어 링크를 보내면 친구들이 선물상자에 한마디씩 넣어 줘요.</p>
+          <a class="btn primary" href="#/state">상태카드 만들기</a>
         </div>
-        ${stateCardHtml(STATES[0], '예시 · 라벨오프', '요즘 바빠서 잠을 많이 못 자서 피곤하다')}
+        ${stateCardHtml(STATES[0], '예시', '요즘 바빠서 잠을 많이 못 자서 피곤하다')}
       </section>
 
       <section class="wrap section" style="margin-bottom:88px">
@@ -205,7 +224,7 @@
           <p class="script">Happy New Year</p>
           <h2>12월 31일, 이 사이트는 문을 닫아요.</h2>
           <div class="countdown" id="countdown" role="timer">${countdownHtml()}</div>
-          <p>올해 붙어있던 라벨은 여기 두고 가요. 새해에는 라벨 없이, 새로운 나로 시작해요.</p>
+          <p>올해 붙은 라벨은 여기 두고, 새해는 가볍게 시작해요.</p>
         </div>
       </section>`,
       mount() {
@@ -244,16 +263,15 @@
     return {
       html: `
       <section class="wrap narrow view">
-        <p class="eyebrow">STEP 1 · 라벨 고르기</p>
-        <h1 class="page-title">당신에게는 어떤 라벨이<br>붙어있나요?</h1>
-        <p class="sub">스스로 붙였든, 누가 붙였든 괜찮아요. 최대 3개까지 골라주세요.</p>
+        <h1 class="page-title">나한테 붙어 있는 라벨을<br>골라 보세요</h1>
+        <p class="sub">스스로 붙였든 누가 붙였든 괜찮아요. 3개까지 고를 수 있어요.</p>
 
         <h2 class="group-title"><span class="dot c-clinic"></span>진단명으로 쓰이는 말</h2>
-        <p class="group-sub">실제 질환의 이름이에요. 상태창에서 <b>제대로 알아보기</b>로 이어져요.</p>
+        <p class="group-sub">실제 병 이름이에요. 고르면 공식 검사나 상태 메모로 이어져요.</p>
         <div class="pick-grid">${group('clinical', 0)}</div>
 
         <h2 class="group-title"><span class="dot c-coral"></span>유행처럼 쓰이는 말</h2>
-        <p class="group-sub">SNS에서 성격처럼 쓰이는 말이에요. 상태창에서 직접 <b>떼어낼</b> 수 있어요.</p>
+        <p class="group-sub">SNS에서 성격처럼 쓰는 말이에요. 고르면 직접 떼어 볼 수 있어요.</p>
         <div class="pick-grid">${group('trend', 4)}</div>
 
         <div class="pickbar">
@@ -283,7 +301,7 @@
     const clinical = l.type === 'clinical';
     const action = clinical
       ? `<div class="sw-actions">
-          <p class="sw-note">실제 진단명이에요. 가볍게 붙이거나 떼어낼 말이 아니라, 혹시 정말 힘들다면 <b>제대로 알아볼</b> 말이에요.${l.screener ? ` 의사와 연구진이 만든 공식 선별검사(${SCREENERS[l.screener].name})로 지금 상태를 확인해 볼 수 있어요.` : ''}</p>
+          <p class="sw-note">실제 병 이름이에요. 가볍게 붙였다 뗄 말은 아니에요. 요즘 정말 힘들다면 한 번 확인해 보세요.${l.screener ? ` 의사와 연구진이 만든 ${SCREENERS[l.screener].name} 검사로 해볼 수 있어요.` : ''}</p>
           <div class="btn-row"><a class="btn glow" href="#/check/${l.id}">${l.screener ? `${SCREENERS[l.screener].name} 검사하기` : '제대로 알아보기'}</a><a class="btn line" href="#/learn?l=${l.id}">관련 강연</a></div>
         </div>`
       : `<div class="peel" data-id="${l.id}">
@@ -292,7 +310,7 @@
             <p class="peel-msg">${esc(l.peel)}</p>
             <div class="peel-label c-${l.color}" role="button" tabindex="0" aria-label="${esc(l.name)} 라벨 떼기"><span>${esc(l.name)}</span><i class="peel-corner"></i></div>
           </div>
-          <p class="peel-after" hidden>이 단어는 성격의 기준이 아니에요. 오늘의 나를 설명하는 수많은 말 중 하나일 뿐이에요.</p>
+          <p class="peel-after" hidden>이 단어 하나로 성격이 정해지지는 않아요.</p>
         </div>`;
     return `<details class="statwin" ${open ? 'open' : ''}>
       <summary>
@@ -301,7 +319,6 @@
         <span class="sw-open" aria-hidden="true"></span>
       </summary>
       <div class="sw-body">
-        <p class="sw-tag">[ 상태창 : ${esc(l.name)} ]</p>
         ${l.official ? `<p class="sw-official">${esc(l.official)}</p>` : ''}
         <dl class="sw-rows">
           <div><dt>어원</dt><dd>${esc(l.origin)}</dd></div>
@@ -357,14 +374,13 @@
       html: `
       <section class="wrap narrow view">
         <a class="back" href="#/pick">← 라벨 다시 고르기</a>
-        <p class="eyebrow">STEP 2 · 상태창 열기</p>
         <h1 class="page-title">내 라벨의 상태창</h1>
-        <p class="sub">칸을 눌러 열어보세요. 이 단어, 정말 알고 쓰고 있었나요?</p>
+        <p class="sub">칸을 눌러 열어 보세요. 단어마다 원래 뜻과 흔한 오해가 들어 있어요.</p>
         <div class="stack">${picked.map((l, i) => statWin(l, i === 0)).join('')}</div>
 
         <section class="after-box">
-          <h2>나도 해봤으니, 너도 해봐</h2>
-          <p>"나 방금 라벨 떼고 왔어. 너한테는 어떤 라벨이 붙어있어?"</p>
+          <h2>친구한테도 물어볼래요?</h2>
+          <p>"너한테는 어떤 라벨 붙어 있어?" 링크 하나 보내면 돼요.</p>
           <button class="btn primary" id="shareRes" type="button">친구에게 공유하기</button>
           <div class="next-links">
             <a href="#/board/${picked[0].id}">'${esc(picked[0].name)}' 라벨을 가진 사람들의 포스트잇 →</a>
@@ -422,9 +438,8 @@
       html: `
       <section class="wrap narrow view">
         <a class="back" href="#/result">← 상태창으로</a>
-        <p class="eyebrow">제대로 알아보기 · 공식 선별검사</p>
         <h1 class="page-title">${esc(l.name)}, 제대로 알아보기</h1>
-        <p class="sub">내가 붙인 '${esc(l.name)}' 라벨이 전문가와 이야기해 볼 수준인지, 아니면 누구나 겪는 감정에 이름을 붙인 건지 확인해 봐요.</p>
+        <p class="sub">병원에 가 볼 만한 정도인지 검사로 확인해 봐요.</p>
         <div class="hint-box">
           <b>${esc(sc.full)}</b>
           <p>${esc(sc.about)}</p>
@@ -502,9 +517,8 @@
       html: `
       <section class="wrap narrow view">
         <a class="back" href="#/result">← 상태창으로</a>
-        <p class="eyebrow">제대로 알아보기</p>
         <h1 class="page-title">${esc(l.name)}, 제대로 알아보기</h1>
-        <p class="sub">이건 진단이 아니에요. 전문가와 이야기할 때 보여줄 수 있는 <b>내 상태 메모</b>를 만드는 과정이에요.</p>
+        <p class="sub">진단은 아니고, 상담받을 때 보여줄 <b>내 상태 메모</b>를 만들어요.</p>
         <div class="hint-box"><b>전문가는 이런 점을 함께 봐요</b><p>${esc(l.criteria)}</p><p class="hint-note">'${esc(l.name)}' 라벨은 누구나 무료로 쓸 수 있는 공식 선별검사가 없어서, 병원에서 전문 검사와 면담으로 확인해요. 아래 문항은 공식 검사가 아니라 상담 때 쓸 메모를 위한 참고용이에요.</p></div>
 
         <form id="chk" class="form">
@@ -592,9 +606,8 @@
     return {
       html: `
       <section class="wrap view">
-        <p class="eyebrow">강연 · 교육</p>
         <h1 class="page-title">라벨, 제대로 알기</h1>
-        <p class="sub">병원·방송·정신건강의학과 전문의 채널의 영상을 골라 모았어요. ${focus ? `선택한 라벨 '${esc(focus.name)}' 관련 영상을 먼저 보여드려요.` : ''}</p>
+        <p class="sub">병원과 방송, 정신건강의학과 전문의 채널 영상을 모았어요. ${focus ? `선택한 라벨 '${esc(focus.name)}' 관련 영상을 먼저 보여드려요.` : ''}</p>
         <div class="lec-grid">${cards}</div>
       </section>`,
     };
@@ -605,9 +618,8 @@
     return {
       html: `
       <section class="wrap narrow view">
-        <p class="eyebrow">상태카드</p>
-        <h1 class="page-title">라벨 말고,<br>지금 '상태'로 말해요</h1>
-        <p class="sub">"나 우울증인가 봐" 대신 "요즘 배터리가 부족해". 라벨은 나를 규정하지만, 상태는 지나가요.</p>
+        <h1 class="page-title">요즘 어때요?</h1>
+        <p class="sub">"나 우울증인가 봐" 대신 "요즘 잠을 못 자서 피곤해"처럼 지금 상태를 적어 보세요. 상태는 지나가니까요.</p>
         <form id="stForm" class="form">
           <div class="field">
             <label class="field-label" for="nick">닉네임</label>
@@ -690,7 +702,7 @@
         <div class="space-head">
           <p class="eyebrow">${mine ? '내 상태방' : '친구의 상태방'} · ${dLabel()}</p>
           <h1 class="page-title">${esc(s.nick)}님의 상태방</h1>
-          <p class="sub">${mine ? '링크를 보내면 친구들이 여기에 한마디를 남겨줘요.' : '요즘 이런 상태래요. 라벨 대신 따뜻한 한마디를 남겨주세요.'}</p>
+          <p class="sub">${mine ? '링크를 보내면 친구들이 여기에 한마디씩 남겨 줘요.' : '요즘 이렇대요. 한마디 남겨 주세요.'}</p>
         </div>
         ${stateCardHtml(state, s.nick, s.text)}
         ${mine ? `<div class="share-box"><p>"내 상태방에 따뜻한 한마디 남겨줘"</p><div class="btn-row" style="justify-content:center"><button class="btn primary" id="shareSp" type="button">링크 공유하기</button><button class="btn ghost" id="copySp" type="button">링크 복사</button></div></div>` : ''}
@@ -712,7 +724,7 @@
           </form>
           <div id="crisis3" hidden></div>
         </section>
-        ${mine ? '' : `<section class="invite"><h2>나도 상태방 만들기</h2><p>${esc(s.nick)}님처럼, 라벨 대신 지금 상태로 말해 봐요.</p><a class="btn glow" href="#/state">내 상태카드 만들기</a></section>`}
+        ${mine ? '' : `<section class="invite"><h2>나도 만들어 볼래요?</h2><p>요즘 상태를 한 줄 적으면 내 상태방이 생겨요.</p><a class="btn glow" href="#/state">내 상태카드 만들기</a></section>`}
         ${isShared() ? '' : '<p class="demo-note">미리보기 안내: 지금은 메시지가 이 기기에만 저장돼요.</p>'}`,
       mount() {
         keep(Api.watchList(`notes:${id}`, ['spaces', id, 'notes'], (list) => {
@@ -754,9 +766,8 @@
     return {
       html: `
       <section class="wrap narrow view">
-        <p class="eyebrow">익명 포스트잇</p>
         <h1 class="page-title">같은 라벨, 다른 이야기</h1>
-        <p class="sub">같은 라벨을 가진 사람들이 익명으로 남기는 이야기예요. 판단하지 않고, 들어주는 곳이에요.</p>
+        <p class="sub">같은 라벨을 가진 사람들이 이름 없이 남긴 이야기.</p>
         <nav class="tabs" aria-label="라벨 선택">${tabs}</nav>
 
         <section class="write-box" style="margin-top:12px">
