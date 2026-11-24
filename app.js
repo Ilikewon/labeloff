@@ -198,6 +198,203 @@
     </article>`;
   }
 
+  /* ---------- Instagram story image (1080x1920) ---------- */
+  const CARD_HEX = { p1: '#FFF6DF', p2: '#F3C9C4', p3: '#D3E2CF', p4: '#F5DE9B', p5: '#E2ECF1' };
+  const STICKER_HEX = { coral: '#E8844A', yellow: '#F2C14E', mint: '#CFE3CB', lilac: '#F3C3BE', sky: '#C9DDEA' };
+  const FONT = '"Pretendard Variable", Pretendard, "Noto Sans KR", "Malgun Gothic", sans-serif';
+  const HAND = 'Gaegu, "Pretendard Variable", sans-serif';
+  const loadImg = (src) => new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = src; });
+  function roundRect(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+  }
+  function wrapText(ctx, text, maxW, maxLines) {
+    const lines = [];
+    let line = '';
+    for (const ch of text) {
+      const test = line + ch;
+      if (ctx.measureText(test).width > maxW && line) {
+        const cut = line.lastIndexOf(' ');
+        if (cut > 0) { lines.push(line.slice(0, cut)); line = line.slice(cut + 1) + ch; } else { lines.push(line); line = ch; }
+      } else line = test;
+    }
+    if (line) lines.push(line);
+    if (lines.length > maxLines) {
+      const kept = lines.slice(0, maxLines);
+      kept[maxLines - 1] = `${kept[maxLines - 1].slice(0, -1)}…`;
+      return kept;
+    }
+    return lines;
+  }
+
+  async function storyImage(c) {
+    await Promise.all([`800 40px ${FONT}`, `600 32px ${FONT}`, `700 52px ${HAND}`].map((f) => document.fonts.load(f).catch(() => {})));
+    const W = 1080;
+    const H = 1920;
+    const cv = document.createElement('canvas');
+    cv.width = W;
+    cv.height = H;
+    const ctx = cv.getContext('2d');
+    const s = stateOf(c.text, c.k);
+    const labels = (c.labels || []).map(byId).filter(Boolean);
+    const img = typeof c.img === 'string' && c.img.startsWith(IMG_PREFIX) ? await loadImg(c.img).catch(() => null) : null;
+    const flower = await loadImg('img/poinsettia.svg').catch(() => null);
+
+    ctx.fillStyle = '#1E3A2D';
+    ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = 'rgba(255,255,255,.05)';
+    for (let y = 20; y < H; y += 40) for (let x = 20; x < W; x += 40) { ctx.beginPath(); ctx.arc(x, y, 2, 0, 7); ctx.fill(); }
+    if (flower) {
+      ctx.save(); ctx.translate(W - 120, 150); ctx.rotate(0.4); ctx.drawImage(flower, -210, -210, 420, 420); ctx.restore();
+      ctx.save(); ctx.translate(90, H - 330); ctx.rotate(-0.3); ctx.drawImage(flower, -130, -130, 260, 260); ctx.restore();
+    }
+
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#F2C14E';
+    ctx.font = `700 56px ${HAND}`;
+    ctx.fillText('나의 요즘 상태카드', W / 2, 225);
+
+    // card geometry: Instagram covers roughly the top and bottom 250px, so keep content between them
+    const cardW = 768;
+    const pad = 34;
+    const cx = (W - cardW) / 2;
+    const cy = 270;
+    const inner = cardW - pad * 2;
+    ctx.font = `600 32px ${FONT}`;
+    const textLines = wrapText(ctx, `"${c.text || ''}"`, inner, 2);
+    ctx.font = `700 50px ${HAND}`;
+    const capLines = c.cap ? wrapText(ctx, c.cap, inner, 2) : [];
+    const cardH = pad + inner + (capLines.length ? 24 + capLines.length * 58 : 0) + 36 + 64 + textLines.length * 46 + (labels.length ? 104 : 0) + 58 + pad;
+
+    ctx.save();
+    ctx.translate(W / 2, cy + cardH / 2);
+    ctx.rotate(-0.02);
+    ctx.translate(-W / 2, -(cy + cardH / 2));
+    ctx.shadowColor = 'rgba(0,0,0,.45)';
+    ctx.shadowBlur = 50;
+    ctx.shadowOffsetY = 24;
+    ctx.fillStyle = CARD_HEX[c.theme] || CARD_HEX.p1;
+    roundRect(ctx, cx, cy, cardW, cardH, 10);
+    ctx.fill();
+    ctx.shadowColor = 'transparent';
+
+    let y = cy + pad;
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(cx + pad, y, inner, inner);
+    const ph = inner - 36;
+    if (img) {
+      const scale = Math.max(ph / img.width, ph / img.height);
+      const sw = ph / scale;
+      const sh = ph / scale;
+      ctx.drawImage(img, (img.width - sw) / 2, (img.height - sh) / 2, sw, sh, cx + pad + 18, y + 18, ph, ph);
+    } else {
+      ctx.fillStyle = CARD_HEX[c.theme] || CARD_HEX.p1;
+      ctx.fillRect(cx + pad + 18, y + 18, ph, ph);
+      ctx.save();
+      ctx.beginPath(); ctx.rect(cx + pad + 18, y + 18, ph, ph); ctx.clip();
+      ctx.strokeStyle = 'rgba(43,38,32,.07)'; ctx.lineWidth = 20;
+      for (let d = -ph; d < ph * 2; d += 56) { ctx.beginPath(); ctx.moveTo(cx + pad + 18 + d, y + 18); ctx.lineTo(cx + pad + 18 + d + ph, y + 18 + ph); ctx.stroke(); }
+      ctx.restore();
+      ctx.font = `800 46px ${FONT}`;
+      const tw = ctx.measureText(s.name).width + 64;
+      ctx.fillStyle = '#FFF8E8';
+      roundRect(ctx, W / 2 - tw / 2 - 6, y + inner / 2 - 46, tw + 12, 92, 18); ctx.fill();
+      ctx.fillStyle = STICKER_HEX[s.color] || STICKER_HEX.mint;
+      roundRect(ctx, W / 2 - tw / 2, y + inner / 2 - 40, tw, 80, 14); ctx.fill();
+      ctx.fillStyle = '#2B2620';
+      ctx.fillText(s.name, W / 2, y + inner / 2 + 16);
+    }
+    y += inner;
+
+    ctx.fillStyle = '#2B2620';
+    if (capLines.length) {
+      y += 24;
+      ctx.font = `700 50px ${HAND}`;
+      capLines.forEach((l) => { y += 50; ctx.fillText(l, W / 2, y); y += 8; });
+    }
+
+    y += 36;
+    ctx.strokeStyle = 'rgba(43,38,32,.25)';
+    ctx.lineWidth = 3;
+    ctx.setLineDash([12, 10]);
+    ctx.beginPath(); ctx.moveTo(cx + pad, y); ctx.lineTo(cx + cardW - pad, y); ctx.stroke();
+    ctx.setLineDash([]);
+
+    y += 56;
+    ctx.textAlign = 'left';
+    ctx.font = `800 36px ${FONT}`;
+    ctx.fillText(`${c.nick || '나'}의 요즘`, cx + pad, y);
+    ctx.font = `800 30px ${FONT}`;
+    const sw2 = ctx.measureText(s.name).width + 36;
+    const sx = cx + cardW - pad - sw2;
+    ctx.fillStyle = '#FFF8E8'; roundRect(ctx, sx - 5, y - 41, sw2 + 10, 58, 14); ctx.fill();
+    ctx.fillStyle = STICKER_HEX[s.color] || STICKER_HEX.mint; roundRect(ctx, sx, y - 36, sw2, 48, 10); ctx.fill();
+    ctx.fillStyle = '#2B2620'; ctx.fillText(s.name, sx + 18, y - 1);
+
+    ctx.font = `600 32px ${FONT}`;
+    textLines.forEach((l) => { y += 46; ctx.fillText(l, cx + pad, y + 8); });
+    y += 8;
+
+    if (labels.length) {
+      y += 48;
+      ctx.fillStyle = '#4A3F35';
+      ctx.font = `800 24px ${FONT}`;
+      ctx.fillText('나를 설명하는 말', cx + pad, y);
+      y += 14;
+      let tx = cx + pad;
+      ctx.font = `800 26px ${FONT}`;
+      labels.forEach((l) => {
+        const name = l.soft || l.name;
+        const w = ctx.measureText(name).width + 32;
+        ctx.fillStyle = 'rgba(255,255,255,.75)'; roundRect(ctx, tx, y, w, 44, 22); ctx.fill();
+        ctx.strokeStyle = 'rgba(43,38,32,.18)'; ctx.lineWidth = 2; ctx.stroke();
+        ctx.fillStyle = '#2B2620'; ctx.fillText(name, tx + 16, y + 31);
+        tx += w + 10;
+      });
+      y += 42;
+    }
+
+    y += 54;
+    ctx.fillStyle = '#4A3F35';
+    ctx.font = `800 24px ${FONT}`;
+    ctx.fillText('회복 퀘스트', cx + pad, y);
+    ctx.fillStyle = '#2B2620';
+    ctx.font = `600 26px ${FONT}`;
+    ctx.fillText(wrapText(ctx, s.quest, inner - 150, 1)[0], cx + pad + 150, y);
+    ctx.restore();
+
+    // brand block, kept above Instagram's bottom reply bar
+    const by = Math.min(cy + cardH + 120, 1600);
+    ctx.textAlign = 'left';
+    ctx.font = `900 46px ${FONT}`;
+    const lw = ctx.measureText('LABEL').width;
+    const ow = ctx.measureText('OFF').width + 28;
+    const lx = W / 2 - (lw + 10 + ow) / 2;
+    ctx.fillStyle = '#F5EEDD';
+    ctx.fillText('LABEL', lx, by);
+    ctx.save();
+    ctx.translate(lx + lw + 10 + ow / 2, by - 16);
+    ctx.rotate(-0.1);
+    ctx.fillStyle = '#FFF8E8'; roundRect(ctx, -ow / 2 - 4, -34, ow + 8, 68, 12); ctx.fill();
+    ctx.fillStyle = '#C8372D'; roundRect(ctx, -ow / 2, -30, ow, 60, 10); ctx.fill();
+    ctx.fillStyle = '#FFF8E8'; ctx.textAlign = 'center'; ctx.fillText('OFF', 0, 16);
+    ctx.restore();
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#F5EEDD';
+    ctx.font = `800 38px ${FONT}`;
+    ctx.fillText('당신에게는 어떤 라벨이 붙어있나요?', W / 2, by + 72);
+    ctx.fillStyle = '#BCCCBD';
+    ctx.font = `600 30px ${FONT}`;
+    ctx.fillText(location.host + location.pathname.replace(/\/$/, ''), W / 2, by + 120);
+
+    return new Promise((res) => cv.toBlob(res, 'image/png'));
+  }
+
   // Shrink a photo to fit comfortably inside one Firestore document.
   function photoToDataUrl(file) {
     return new Promise((resolve, reject) => {
@@ -801,7 +998,12 @@
           <p class="sub">${mine ? '링크를 보내면 친구들이 여기에 한마디씩 남겨 줘요.' : '요즘 이렇대요. 한마디 남겨 주세요.'}</p>
         </div>
         ${cardHtml(s)}
-        ${mine ? `<div class="share-box"><p>"내 상태방에 따뜻한 한마디 남겨줘"</p><div class="btn-row" style="justify-content:center"><button class="btn primary" id="shareSp" type="button">링크 공유하기</button><button class="btn ghost" id="copySp" type="button">링크 복사</button></div></div>` : ''}
+        ${mine ? `<div class="share-box">
+          <p>"내 상태방에 따뜻한 한마디 남겨줘"</p>
+          <div class="btn-row" style="justify-content:center"><button class="btn story" id="storySp" type="button">인스타 스토리로 공유</button><button class="btn ghost" id="saveSp" type="button">이미지로 저장</button></div>
+          <div class="btn-row" style="justify-content:center"><button class="btn primary" id="shareSp" type="button">링크 공유하기</button><button class="btn ghost" id="copySp" type="button">링크 복사</button></div>
+          <p class="story-tip">스토리에 링크 스티커를 붙이고 상태방 주소를 넣으면 친구들이 바로 들어올 수 있어요. 스토리로 공유할 때 주소가 자동으로 복사돼요.</p>
+        </div>` : ''}
 
         <section class="paper">
           <h2>롤링페이퍼 <span id="ncount"></span></h2>
@@ -831,6 +1033,29 @@
           const text = `${s.nick}의 상태방에 따뜻한 한마디 남겨줘. 라벨 말고, 지금 상태로 말하는 곳 (12월 31일까지)`;
           $('#shareSp').addEventListener('click', () => share({ title: `${s.nick}님의 상태방`, text, url: shareUrl }));
           $('#copySp').addEventListener('click', () => copy(shareUrl, '링크를 복사했어요'));
+          // Build the story image up front: the share sheet must open inside the tap, with no slow work before it.
+          let storyFile = null;
+          storyImage(s).then((b) => { storyFile = new File([b], 'labeloff-story.png', { type: 'image/png' }); }, () => {});
+          const notReady = () => toast('스토리 이미지를 만드는 중이에요. 잠시 후 다시 눌러 주세요.');
+          const saveStory = () => {
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(storyFile);
+            a.download = 'labeloff-story.png';
+            document.body.appendChild(a);
+            a.click();
+            setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+            toast('이미지를 저장했어요. 인스타그램 스토리에서 이 이미지를 올려 주세요.');
+          };
+          $('#storySp').addEventListener('click', () => {
+            if (!storyFile) { notReady(); return; }
+            if (navigator.clipboard) navigator.clipboard.writeText(shareUrl).catch(() => {});
+            if (navigator.canShare && navigator.canShare({ files: [storyFile] })) {
+              navigator.share({ files: [storyFile] })
+                .then(() => toast('상태방 주소가 복사돼 있어요. 스토리의 링크 스티커에 붙여 넣으세요.'))
+                .catch((e) => { if (e.name !== 'AbortError') saveStory(); });
+            } else saveStory();
+          });
+          $('#saveSp').addEventListener('click', () => { if (storyFile) saveStory(); else notReady(); });
         }
         const form = $('#noteForm');
         $$('.chip', form).forEach((c) => c.addEventListener('click', () => { form.text.value = c.dataset.t; }));

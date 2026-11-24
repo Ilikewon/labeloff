@@ -525,6 +525,10 @@ input[type="text"]:focus, textarea:focus { outline: 3px solid var(--gold); outli
 .write-box h2 { font-size: 20px; margin-bottom: 14px; }
 .share-box { margin-top: 20px; padding: 20px; border-radius: var(--r-paper); background: var(--paper); color: var(--ink); text-align: center; box-shadow: var(--shadow); }
 .share-box p { color: var(--sub); margin-bottom: 12px; font-size: 15px; }
+.share-box .btn-row { margin-top: 10px; }
+.share-box .story-tip { margin: 14px 0 0; font-size: 13px; }
+.btn.story { color: #fff; background: linear-gradient(45deg, #C2531A, #C8326E 55%, #7A3AA8); }
+.btn.story:hover { filter: brightness(1.08); }
 .demo-note { margin-top: 18px; font-size: 13px; color: var(--on-sub); text-align: center; }
 .invite { margin-top: 28px; text-align: center; padding: 28px 20px; border-radius: var(--r-win); background: var(--win); color: var(--wintext); border: 1px solid var(--winline); }
 .invite p { color: var(--winsub); margin: 6px 0 16px; }
