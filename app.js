@@ -998,12 +998,6 @@
           <p class="sub">${mine ? '링크를 보내면 친구들이 여기에 한마디씩 남겨 줘요.' : '요즘 이렇대요. 한마디 남겨 주세요.'}</p>
         </div>
         ${cardHtml(s)}
-        ${mine ? `<div class="share-box">
-          <p>"내 상태방에 따뜻한 한마디 남겨줘"</p>
-          <div class="btn-row" style="justify-content:center"><button class="btn story" id="storySp" type="button">인스타 스토리로 공유</button><button class="btn ghost" id="saveSp" type="button">이미지로 저장</button></div>
-          <div class="btn-row" style="justify-content:center"><button class="btn primary" id="shareSp" type="button">링크 공유하기</button><button class="btn ghost" id="copySp" type="button">링크 복사</button></div>
-          <p class="story-tip">스토리에 링크 스티커를 붙이고 상태방 주소를 넣으면 친구들이 바로 들어올 수 있어요. 스토리로 공유할 때 주소가 자동으로 복사돼요.</p>
-        </div>` : ''}
 
         <section class="paper">
           <h2>롤링페이퍼 <span id="ncount"></span></h2>
@@ -1022,6 +1016,11 @@
           </form>
           <div id="crisis3" hidden></div>
         </section>
+        ${mine ? `<div class="share-box">
+          <p>"내 상태방에 따뜻한 한마디 남겨줘"</p>
+          <div class="share-stack"><button class="btn story" id="storySp" type="button">인스타 스토리로 공유</button><button class="btn primary" id="shareSp" type="button">링크 공유하기</button></div>
+          <p class="story-tip">스토리에 링크 스티커를 붙이고 상태방 주소를 넣으면 친구들이 바로 들어올 수 있어요. 스토리로 공유할 때 주소가 자동으로 복사돼요.</p>
+        </div>` : ''}
         ${mine ? '' : `<section class="invite"><h2>나도 만들어 볼래요?</h2><p>요즘 상태를 한 줄 적으면 내 상태방이 생겨요.</p><a class="btn glow" href="#/state">내 상태카드 만들기</a></section>`}
         ${isShared() ? '' : '<p class="demo-note">미리보기 안내: 지금은 메시지가 이 기기에만 저장돼요.</p>'}`,
       mount() {
@@ -1032,7 +1031,6 @@
         if (mine) {
           const text = `${s.nick}의 상태방에 따뜻한 한마디 남겨줘. 라벨 말고, 지금 상태로 말하는 곳 (12월 31일까지)`;
           $('#shareSp').addEventListener('click', () => share({ title: `${s.nick}님의 상태방`, text, url: shareUrl }));
-          $('#copySp').addEventListener('click', () => copy(shareUrl, '링크를 복사했어요'));
           // Build the story image up front: the share sheet must open inside the tap, with no slow work before it.
           let storyFile = null;
           storyImage(s).then((b) => { storyFile = new File([b], 'labeloff-story.png', { type: 'image/png' }); }, () => {});
@@ -1055,7 +1053,6 @@
                 .catch((e) => { if (e.name !== 'AbortError') saveStory(); });
             } else saveStory();
           });
-          $('#saveSp').addEventListener('click', () => { if (storyFile) saveStory(); else notReady(); });
         }
         const form = $('#noteForm');
         $$('.chip', form).forEach((c) => c.addEventListener('click', () => { form.text.value = c.dataset.t; }));

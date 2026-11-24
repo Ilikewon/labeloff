@@ -523,9 +523,11 @@ input[type="text"]:focus, textarea:focus { outline: 3px solid var(--gold); outli
 .paper h2 span { color: var(--gold); font-weight: 700; }
 .write-box { margin-top: 36px; padding: 24px; background: var(--paper); color: var(--ink); border-radius: var(--r-paper); box-shadow: var(--shadow); }
 .write-box h2 { font-size: 20px; margin-bottom: 14px; }
-.share-box { margin-top: 20px; padding: 20px; border-radius: var(--r-paper); background: var(--paper); color: var(--ink); text-align: center; box-shadow: var(--shadow); }
+.share-box { margin-top: 36px; padding: 20px; border-radius: var(--r-paper); background: var(--paper); color: var(--ink); text-align: center; box-shadow: var(--shadow); }
 .share-box p { color: var(--sub); margin-bottom: 12px; font-size: 15px; }
 .share-box .btn-row { margin-top: 10px; }
+.share-stack { display: flex; flex-direction: column; align-items: center; gap: 10px; margin-top: 6px; }
+.share-stack .btn { width: 100%; max-width: 320px; }
 .share-box .story-tip { margin: 14px 0 0; font-size: 13px; }
 .btn.story { color: #fff; background: linear-gradient(45deg, #C2531A, #C8326E 55%, #7A3AA8); }
 .btn.story:hover { filter: brightness(1.08); }
