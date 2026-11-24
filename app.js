@@ -864,6 +864,11 @@
         <h1 class="page-title">요즘 어때요?</h1>
         <p class="sub">"나 우울증인가 봐" 대신 "요즘 잠을 못 자서 피곤해"처럼 지금 상태를 적어 보세요. 사진과 한마디로 카드를 꾸밀 수도 있어요.</p>
         <form id="stForm" class="form">
+          <fieldset>
+            <legend>나를 설명하는 라벨 (최대 3개, 선택)</legend>
+            <p class="field-hint">카드에는 부드러운 말로 바뀌어 들어가요. 예) 우울증 → 마음이 무거운 요즘</p>
+            <div class="pick-grid small">${LABELS.map((l, i) => `<button type="button" class="pick sticker c-${l.color}" style="--r:${rot(i)}deg" data-id="${l.id}" aria-pressed="false">${esc(l.name)}</button>`).join('')}</div>
+          </fieldset>
           <div class="field">
             <label class="field-label" for="nick">닉네임</label>
             <input type="text" id="nick" name="nick" maxlength="12" required placeholder="예) 선우" autocomplete="off">
@@ -886,11 +891,6 @@
             <label class="field-label" for="cap">사진 아래 한마디 (선택)</label>
             <input type="text" id="cap" name="cap" maxlength="40" placeholder="예) 오늘은 일찍 잘 거야" autocomplete="off">
           </div>
-          <fieldset>
-            <legend>나를 설명하는 라벨 (최대 3개, 선택)</legend>
-            <p class="field-hint">카드에는 부드러운 말로 바뀌어 들어가요. 예) 우울증 → 마음이 무거운 요즘</p>
-            <div class="pick-grid small">${LABELS.map((l, i) => `<button type="button" class="pick sticker c-${l.color}" style="--r:${rot(i)}deg" data-id="${l.id}" aria-pressed="false">${esc(l.name)}</button>`).join('')}</div>
-          </fieldset>
           <fieldset><legend>카드 색</legend>${colorPicker('theme', '카드 색')}</fieldset>
           <h2 class="preview-title">미리보기</h2>
           <div id="cardOut"></div>
