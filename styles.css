@@ -193,7 +193,7 @@ a.sticker:hover, button.sticker:hover { transform: rotate(0deg) translateY(-3px)
 .hero .lead { margin-inline: auto; }
 .hero .cta-row { justify-content: center; }
 .cloud-wrap { width: 100%; max-width: 760px; }
-.hero h1 { font-size: clamp(40px, 9.5vw, 74px); font-weight: 900; line-height: 1.12; letter-spacing: -.04em; }
+.hero h1 { font-size: clamp(40px, 9.5vw, 74px); font-weight: 900; line-height: 1.25; letter-spacing: .02em; }
 .hero h1 em {
   font-style: normal; display: inline-block; color: var(--paper); background: var(--red);
   padding: 0 .16em; border-radius: .14em; transform: rotate(-3deg);
@@ -235,7 +235,7 @@ a.sticker:hover, button.sticker:hover { transform: rotate(0deg) translateY(-3px)
 
 .split { display: grid; gap: 28px; justify-items: center; text-align: center; }
 .split .sub { margin-bottom: 24px; }
-.split .statecard { width: 100%; max-width: 560px; text-align: left; }
+.split .mycard { max-width: 400px; }
 
 .newyear {
   position: relative; text-align: center; padding: 56px 24px 48px; border-radius: var(--r-paper); color: var(--ink);
@@ -456,19 +456,46 @@ input[type="text"]:focus, textarea:focus { outline: 3px solid var(--gold); outli
 }
 .crisis a { font-weight: 800; color: #B3361F; text-decoration: underline; text-underline-offset: 3px; }
 
-/* state card */
-.statecard { padding: 22px; }
-.sc-top { display: flex; justify-content: space-between; align-items: center; }
-.sc-top .sw-tag { margin: 0; }
-.sc-nick { font-size: 14px; font-weight: 700; color: var(--winsub); }
-.sc-label { margin-top: 18px; font-size: 13px; color: var(--winsub); font-weight: 700; }
-.sc-name { margin-top: 10px; }
-.sc-name .sticker { font-size: 22px; padding: 8px 16px; border-radius: 10px; box-shadow: 0 0 0 3px var(--win), 0 0 0 4px var(--winline); }
-.hp { display: flex; align-items: center; gap: 10px; margin: 18px 0 4px; font-size: 13px; color: var(--winsub); font-weight: 700; }
-.hp-bar { flex: 1; height: 10px; border-radius: 999px; background: var(--win2); border: 1px solid var(--winline); overflow: hidden; }
+/* state card: a decorated polaroid in the chosen gift colour */
+.mycard {
+  --ink-2: #4A3F35;
+  width: 100%; max-width: 440px; margin: 0 auto; padding: 16px 16px 20px;
+  background: var(--pc); color: var(--ink); border-radius: var(--r-paper); text-align: left;
+  box-shadow: 0 22px 40px -22px rgba(0, 0, 0, .8); transform: rotate(-1deg);
+}
+.mc-photo { aspect-ratio: 1 / 1; max-width: 100%; border: 8px solid #fff; border-radius: 4px; background: #fff; overflow: hidden; box-shadow: 0 6px 14px -10px rgba(0, 0, 0, .6); }
+.mc-photo img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.mc-photo-empty {
+  width: 100%; height: 100%; display: grid; place-items: center;
+  background: repeating-linear-gradient(135deg, rgba(43, 38, 32, .06) 0 14px, transparent 14px 28px), var(--pc);
+}
+.mc-photo-empty .sticker { font-size: 24px; padding: 10px 20px; cursor: default; }
+.mc-cap { margin: 12px 4px 0; font-family: var(--hand); font-weight: 700; font-size: 24px; line-height: 1.3; text-align: center; text-wrap: balance; }
+.mc-body { margin-top: 16px; padding-top: 14px; border-top: 1.5px dashed rgba(43, 38, 32, .22); }
+.mc-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.mc-nick { font-weight: 800; font-size: 15px; }
+.mc-text { margin-top: 10px; font-size: 15px; font-weight: 600; }
+.mc-labels { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 12px; }
+.mc-sub { width: 100%; font-size: 12px; font-weight: 800; color: var(--ink-2); }
+.mc-tag { font-size: 13px; font-weight: 800; padding: 4px 10px; border-radius: 999px; background: rgba(255, 255, 255, .72); border: 1.5px solid rgba(43, 38, 32, .15); }
+.hp { display: flex; align-items: center; gap: 10px; margin: 14px 0 2px; font-size: 12px; font-weight: 800; color: var(--ink-2); }
+.hp-bar { flex: 1; height: 9px; border-radius: 999px; background: rgba(43, 38, 32, .12); overflow: hidden; }
 .hp-bar i { display: block; height: 100%; background: linear-gradient(90deg, var(--red), var(--gold)); border-radius: 999px; }
-.hp-num { font-family: var(--mono); color: var(--wintext); }
-#cardOut { margin-top: 28px; }
+.hp-num { font-variant-numeric: tabular-nums; color: var(--ink); }
+.mc-rows { margin: 8px 0 0; }
+.mc-rows > div { display: grid; grid-template-columns: 76px 1fr; gap: 10px; padding: 7px 0; border-top: 1px solid rgba(43, 38, 32, .1); }
+.mc-rows dt { font-size: 12px; font-weight: 800; color: var(--ink-2); padding-top: 2px; }
+.mc-rows dd { margin: 0; font-size: 14px; }
+
+/* state card form */
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+.photo-row { display: flex; flex-wrap: wrap; gap: 10px; }
+.sr-only:focus-visible + label { outline: 3px solid var(--gold); outline-offset: 3px; }
+.field-hint { margin-top: 8px; font-size: 13px; color: var(--on-sub); }
+.form fieldset .field-hint { margin: -4px 0 12px; }
+.pick-grid.small .sticker { font-size: 14px; padding: 7px 12px; }
+.preview-title { margin: 8px 0 16px; font-size: 17px; text-align: center; color: var(--on-sub); }
+#cardOut { margin-bottom: 32px; }
 
 /* gift-box notes */
 .notes { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 30px 16px; margin-top: 28px; }

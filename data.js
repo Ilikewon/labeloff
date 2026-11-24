@@ -1,6 +1,6 @@
 const LABELS = [
   {
-    id: 'depression', type: 'clinical', color: 'clinic', name: '우울증', screener: 'phq9',
+    id: 'depression', type: 'clinical', color: 'clinic', name: '우울증', soft: '마음이 무거운 요즘', screener: 'phq9',
     official: '주요우울장애 (Major Depressive Disorder)',
     origin: '라틴어 deprimere(아래로 누르다)에서 온 depression. 마음이 눌려 가라앉은 상태를 뜻해요.',
     meaning: '단순히 기분이 처지는 것이 아니라, 우울감이나 흥미·즐거움의 상실이 2주 이상 거의 매일 이어지고 수면·식욕·집중력·에너지의 변화가 함께 나타나 일상에 지장을 주는 상태예요.',
@@ -9,7 +9,7 @@ const LABELS = [
     checks: ['거의 하루 종일 우울하거나 공허한 기분이 든다', '예전엔 즐겁던 일에 흥미가 거의 없다', '잠이 너무 많아지거나 너무 줄었다', '쉽게 지치고 기운이 없다', '내가 쓸모없다는 생각이 자주 든다', '집중하거나 결정하기가 어렵다'],
   },
   {
-    id: 'adhd', type: 'clinical', color: 'clinic', name: 'ADHD',
+    id: 'adhd', type: 'clinical', color: 'clinic', name: 'ADHD', soft: '생각이 바쁜 사람',
     official: '주의력결핍 과잉행동장애 (Attention-Deficit/Hyperactivity Disorder)',
     origin: 'Attention-Deficit/Hyperactivity Disorder의 머리글자예요. 주의력 결핍, 과잉행동, 충동성이 핵심이에요.',
     meaning: '어린 시절(대개 12세 이전)부터 부주의·과잉행동·충동성이 꾸준히 나타나고, 집·학교·직장 등 두 곳 이상에서 생활에 지장을 주는 신경발달 질환이에요. 성인이 되어 처음 진단받는 경우도 많아요.',
@@ -18,7 +18,7 @@ const LABELS = [
     checks: ['어릴 때부터 산만하다는 말을 자주 들었다', '마감이나 약속을 반복해서 놓친다', '물건을 자주 잃어버린다', '가만히 앉아 있기가 몹시 힘들다', '생각보다 말이나 행동이 먼저 나간다', '지루한 일을 시작하고 끝내기가 유독 어렵다'],
   },
   {
-    id: 'anger', type: 'clinical', color: 'clinic', name: '분조장',
+    id: 'anger', type: 'clinical', color: 'clinic', name: '분조장', soft: '화가 쌓인 요즘',
     official: '간헐적 폭발장애 (Intermittent Explosive Disorder)',
     origin: '"분노조절장애"의 줄임말이지만, 사실 정식 진단명이 아니에요. 가장 가까운 진단명은 "간헐적 폭발장애"예요.',
     meaning: '상황에 비해 지나치게 큰 분노 폭발(폭언, 물건 파손, 폭력 등)이 충동적으로 반복되고, 그 뒤 후회나 고통, 관계·일상의 문제가 따라오는 상태예요.',
@@ -27,7 +27,7 @@ const LABELS = [
     checks: ['사소한 일에 크게 폭발하는 일이 반복된다', '화를 내고 나면 크게 후회하거나 괴롭다', '분노 때문에 물건을 부수거나 크게 다툰 적이 있다', '화가 나기 시작하면 멈추기가 어렵다', '분노 때문에 관계나 일에 문제가 생겼다'],
   },
   {
-    id: 'panic', type: 'clinical', color: 'clinic', name: '공황장애', screener: 'gad7',
+    id: 'panic', type: 'clinical', color: 'clinic', name: '공황장애', soft: '숨 고르기 필요', screener: 'gad7',
     screenerNote: 'GAD-7은 불안 전반을 살피는 검사라 공황발작만 따로 재지는 않아요. 숨이 막히고 죽을 것 같은 발작이 갑자기 반복된다면, 점수와 상관없이 진료를 받아 보세요.',
     official: '공황장애 (Panic Disorder)',
     origin: '그리스 신화의 목신 판(Pan)이 사람들에게 일으켰다는 갑작스러운 공포에서 panic이라는 말이 생겼어요.',
@@ -37,7 +37,7 @@ const LABELS = [
     checks: ['갑자기 심장이 터질 듯 뛰고 숨이 막힌 적이 있다', '이러다 죽을 것 같다는 공포를 느낀 적이 있다', '또 그럴까 봐 계속 걱정된다', '지하철·엘리베이터 등 특정 장소를 피하게 됐다', '어지럽거나 손발이 저리는 일이 반복된다'],
   },
   {
-    id: 'ocd', type: 'clinical', color: 'clinic', name: '강박증',
+    id: 'ocd', type: 'clinical', color: 'clinic', name: '강박증', soft: '꼼꼼함 과부하',
     official: '강박장애 (Obsessive-Compulsive Disorder)',
     origin: 'obsessive(사로잡힌) + compulsive(억지로 하게 되는). 원치 않는 생각에 사로잡히고, 그걸 줄이려 반복 행동을 하게 된다는 뜻이에요.',
     meaning: '원치 않는 생각(강박사고)이 계속 떠오르고, 불안을 줄이려 손 씻기·확인하기 같은 행동(강박행동)을 반복해 하루 1시간 이상을 쓰거나 큰 고통을 느끼는 상태예요.',
@@ -46,7 +46,7 @@ const LABELS = [
     checks: ['원치 않는 생각이 머릿속에서 떠나지 않는다', '문단속·가스 등을 여러 번 확인해야 안심된다', '손 씻기 같은 행동을 멈추기 어렵다', '정해진 순서대로 하지 않으면 몹시 불안하다', '이런 행동에 하루 1시간 넘게 쓴다'],
   },
   {
-    id: 'anxiety', type: 'clinical', color: 'clinic', name: '불안장애', screener: 'gad7',
+    id: 'anxiety', type: 'clinical', color: 'clinic', name: '불안장애', soft: '걱정 많은 요즘', screener: 'gad7',
     official: '범불안장애 (Generalized Anxiety Disorder) 등',
     origin: '불안(不安)은 "편안하지 않다"는 뜻이에요. 불안장애는 범불안장애, 사회불안장애, 공황장애 등을 아우르는 큰 묶음이에요.',
     meaning: '여러 일에 대한 과도한 걱정이 6개월 이상 대부분의 날에 이어지고, 스스로 조절하기 어려우며 근육 긴장·불면·피로 등이 함께 나타나는 상태예요(범불안장애 기준).',
@@ -55,7 +55,7 @@ const LABELS = [
     checks: ['여러 가지 일에 대한 걱정이 멈추지 않는다', '걱정을 스스로 조절하기 어렵다', '늘 긴장되어 있고 쉽게 피곤하다', '걱정 때문에 잠들기 어렵다', '별일 아닌데도 최악의 상황부터 떠오른다'],
   },
   {
-    id: 'bipolar', type: 'clinical', color: 'clinic', name: '조울증',
+    id: 'bipolar', type: 'clinical', color: 'clinic', name: '조울증', soft: '기분 롤러코스터',
     official: '양극성장애 (Bipolar Disorder)',
     origin: '조(躁, 들뜸) + 울(鬱, 가라앉음). 영어 bipolar는 "두 개의 극"이라는 뜻이에요.',
     meaning: '평소와 확연히 다른 들뜬 기분과 에너지 상승(조증·경조증 삽화)과 우울 삽화가 며칠~몇 주 단위로 나타나는 질환이에요. 조증 삽화는 1주 이상 이어지는 것이 기준이에요.',
@@ -79,35 +79,35 @@ const LABELS = [
     peel: '단단해 보여도 기대고 싶은 날이 있어도 괜찮아.',
   },
   {
-    id: 'avoidant', type: 'trend', color: 'sky', name: '회피형',
+    id: 'avoidant', type: 'trend', color: 'sky', name: '회피형', soft: '나만의 속도',
     origin: '심리학자 볼비와 에인스워스의 애착 이론에서 나온 "회피 애착"에서 왔어요. 원래는 아이와 양육자의 관계를 설명하던 개념이에요.',
     meaning: '애착 유형은 성격 진단이 아니라 관계 경험에서 생긴 경향이에요. 새로운 관계와 경험 속에서 충분히 달라질 수 있어요.',
     myth: '"걔 회피형이라 연락 안 됨"처럼 상대를 단정하거나, "난 회피형이라 연애 못 해"처럼 스스로를 가두는 말이 되기 쉬워요.',
     peel: '혼자 있는 시간이 필요한 것도, 천천히 다가가는 것도 너의 속도야.',
   },
   {
-    id: 'anxious', type: 'trend', color: 'yellow', name: '불안형',
+    id: 'anxious', type: 'trend', color: 'yellow', name: '불안형', soft: '사랑이 많은 편',
     origin: '회피형과 마찬가지로 애착 이론의 "불안 애착"에서 왔어요. 관계에서 버려질까 걱정하는 경향을 설명하는 말이에요.',
     meaning: '불안형은 고정된 성격이 아니라 경향이에요. 안정적인 관계를 경험하며 얼마든지 편안해질 수 있어요.',
     myth: '"불안형이라 집착함"처럼 쓰이면, 사랑받고 싶은 자연스러운 마음까지 문제처럼 보이게 만들어요.',
     peel: '사랑받고 싶은 마음은 약점이 아니라 따뜻함이야.',
   },
   {
-    id: 'looks', type: 'trend', color: 'coral', name: '외모정병',
+    id: 'looks', type: 'trend', color: 'coral', name: '외모정병', soft: '거울이랑 화해 중',
     origin: '"외모"와 "정신병"을 합친 줄임말이에요. 외모 때문에 몹시 괴로운 상태를 가볍게 부르는 말로 쓰여요.',
     meaning: '외모에 신경 쓰는 건 자연스러워요. 다만 남들은 잘 모르는 결점에 하루 몇 시간씩 몰두하고 일상이 무너진다면 "신체이형장애"라는 실제 질환일 수 있으니 전문가와 이야기해 보는 게 좋아요.',
     myth: '"정병"이라는 표현 자체가 정신질환을 희화화해서, 정말 도움이 필요한 사람이 말을 꺼내기 어렵게 만들어요.',
     peel: '너가 제일 예뻐. 진짜로.',
   },
   {
-    id: 'glass', type: 'trend', color: 'mint', name: '유리멘탈',
+    id: 'glass', type: 'trend', color: 'mint', name: '유리멘탈', soft: '섬세한 마음',
     origin: '유리(glass) + 멘탈(mental). 쉽게 깨지는 마음이라는 뜻의 신조어예요.',
     meaning: '상처받는 건 약해서가 아니라 느끼는 사람이라서예요. 회복력은 타고나는 게 아니라 경험과 지지 속에서 길러져요.',
     myth: '"넌 유리멘탈이라 안 돼"는 힘들다는 말을 꺼내기 어렵게 만들어요.',
     peel: '자주 흔들려도, 매번 다시 일어선 게 바로 너야.',
   },
   {
-    id: 'gold', type: 'trend', color: 'yellow', name: '금쪽이',
+    id: 'gold', type: 'trend', color: 'yellow', name: '금쪽이', soft: '금쪽같은 사람',
     origin: '육아 예능 "요즘 육아 금쪽같은 내 새끼"(2020~)에서 유래했어요. "금쪽같다"는 원래 매우 귀하다는 뜻이에요.',
     meaning: '요즘은 "문제아", "철없는 사람"이라는 뜻으로 쓰이지만, 원래는 금처럼 귀한 존재라는 말이에요.',
     myth: '누군가를 "금쪽이"라고 부르며 놀리면, 도움이 필요한 사람의 어려움을 웃음거리로 만들 수 있어요.',

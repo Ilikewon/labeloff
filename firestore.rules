@@ -8,13 +8,25 @@ service cloud.firestore {
     function okText(v, max) { return v is string && v.size() > 0 && v.size() <= max; }
     function okColor(c) { return c in ['p1', 'p2', 'p3', 'p4', 'p5']; }
 
+    function okLabels(l) {
+      return l is list && l.size() <= 3 && l.hasOnly(['depression', 'adhd', 'anger', 'panic', 'ocd', 'anxiety', 'bipolar',
+        'egen', 'teto', 'avoidant', 'anxious', 'looks', 'glass', 'gold', 'introvert']);
+    }
+    // 사진은 앱에서 줄인 JPEG만 받아요(약 700KB 이하, 문서 한도 1MB 안).
+    function okImage(v) { return v is string && v.size() <= 720000 && v.matches('^data:image/jpeg;base64,[A-Za-z0-9+/=]+$'); }
+
     match /spaces/{spaceId} {
       allow read: if true;
-      allow create: if request.resource.data.keys().hasOnly(['nick', 'text', 'k', 't'])
+      allow create: if request.resource.data.keys().hasAll(['nick', 'text', 'k', 't'])
+        && request.resource.data.keys().hasOnly(['nick', 'text', 'k', 't', 'img', 'cap', 'theme', 'labels'])
         && okText(request.resource.data.nick, 12)
         && okText(request.resource.data.text, 80)
         && okText(request.resource.data.k, 20)
-        && request.resource.data.t is number;
+        && request.resource.data.t is number
+        && (!('img' in request.resource.data) || okImage(request.resource.data.img))
+        && (!('cap' in request.resource.data) || okText(request.resource.data.cap, 40))
+        && (!('theme' in request.resource.data) || okColor(request.resource.data.theme))
+        && (!('labels' in request.resource.data) || okLabels(request.resource.data.labels));
       allow update, delete: if false;
 
       match /notes/{noteId} {

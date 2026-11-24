@@ -45,7 +45,12 @@
     },
     async saveSpace(s) {
       const r = await getRemote();
-      if (r) await r.fs.setDoc(r.fs.doc(r.db, 'spaces', s.id), { nick: s.nick, text: s.text, k: s.k, t: s.t });
+      const data = { nick: s.nick, text: s.text, k: s.k, t: s.t };
+      if (s.img) data.img = s.img;
+      if (s.cap) data.cap = s.cap;
+      if (s.theme) data.theme = s.theme;
+      if (s.labels && s.labels.length) data.labels = s.labels;
+      if (r) await r.fs.setDoc(r.fs.doc(r.db, 'spaces', s.id), data);
       Store.set('space:' + s.id, s);
       const mine = Store.get('mySpaces', []);
       if (!mine.includes(s.id)) Store.set('mySpaces', [...mine, s.id]);
@@ -163,21 +168,62 @@
     ? list.map((n, i) => `<article class="note ${POST_COLORS.includes(n.c) ? n.c : 'p1'}" style="--r:${rot(i) * 0.5}deg">${BOWS[i % 2]}<div class="gift-box"><p class="gift-name">${esc(n.from || '익명')}</p><p class="gift-msg">${esc(n.text)}</p><p class="gift-meta">${n.seed ? '예시 글' : n.t ? fmtDate(n.t) : ''}</p></div></article>`).join('')
     : '<p class="empty-note">아직 남겨진 메시지가 없어요. 첫 번째로 남겨주세요.</p>');
 
-  const colorPicker = (name) => `<div class="opts colors" role="radiogroup" aria-label="포스트잇 색">${POST_COLORS.map((c, i) => `<label class="opt ${c}"><input type="radio" name="${name}" value="${c}" ${i === 0 ? 'checked' : ''} aria-label="색 ${i + 1}"><span></span></label>`).join('')}</div>`;
+  const colorPicker = (name, label = '포스트잇 색') => `<div class="opts colors" role="radiogroup" aria-label="${label}">${POST_COLORS.map((c, i) => `<label class="opt ${c}"><input type="radio" name="${name}" value="${c}" ${i === 0 ? 'checked' : ''} aria-label="색 ${i + 1}"><span></span></label>`).join('')}</div>`;
 
-  function stateCardHtml(s, nick, text) {
-    return `<div class="statwin statecard">
-      <div class="sc-top"><span class="sw-tag">상태창</span><span class="sc-nick">${esc(nick)}</span></div>
-      <p class="sc-label">현재 상태</p>
-      <h3 class="sc-name"><span class="sticker sm c-${s.color}">${esc(s.name)}</span></h3>
-      <div class="hp"><span>마음 에너지</span><span class="hp-bar"><i style="width:${s.hp}%"></i></span><span class="hp-num">${s.hp}</span></div>
-      <dl class="sw-rows">
-        <div><dt>원인</dt><dd>"${esc(text)}"</dd></div>
-        <div><dt>효과</dt><dd>${esc(s.effect)}</dd></div>
-        <div><dt>회복 퀘스트</dt><dd>${esc(s.quest)}</dd></div>
-        <div><dt>지속 시간</dt><dd>일시적 · 라벨은 남지만, 상태는 지나가요</dd></div>
-      </dl>
-    </div>`;
+  const IMG_PREFIX = 'data:image/jpeg;base64,';
+  const stateOf = (text, k) => (k && STATES.find((x) => x.key === k)) || STATES.find((x) => x.re.test(text || '')) || STATES[STATES.length - 1];
+
+  // c: { nick, text, k?, img?, cap?, theme?, labels? }
+  function cardHtml(c) {
+    const s = stateOf(c.text, c.k);
+    const theme = POST_COLORS.includes(c.theme) ? c.theme : 'p1';
+    const img = typeof c.img === 'string' && c.img.startsWith(IMG_PREFIX) ? c.img : '';
+    const labels = (c.labels || []).map(byId).filter(Boolean);
+    return `<article class="mycard ${theme}">
+      <div class="mc-photo">${img
+        ? `<img src="${esc(img)}" alt="${esc(c.nick || '')}님이 고른 요즘 기분 사진">`
+        : `<div class="mc-photo-empty" aria-hidden="true"><span class="sticker c-${s.color}">${esc(s.name)}</span></div>`}</div>
+      ${c.cap ? `<p class="mc-cap">${esc(c.cap)}</p>` : ''}
+      <div class="mc-body">
+        <div class="mc-top"><span class="mc-nick">${esc(c.nick || '나')}의 요즘</span><span class="sticker sm c-${s.color}">${esc(s.name)}</span></div>
+        <p class="mc-text">"${esc(c.text || '')}"</p>
+        ${labels.length ? `<div class="mc-labels"><span class="mc-sub">나를 설명하는 말</span>${labels.map((l) => `<span class="mc-tag">${esc(l.soft || l.name)}</span>`).join('')}</div>` : ''}
+        <div class="hp"><span>마음 에너지</span><span class="hp-bar"><i style="width:${s.hp}%"></i></span><span class="hp-num">${s.hp}</span></div>
+        <dl class="mc-rows">
+          <div><dt>효과</dt><dd>${esc(s.effect)}</dd></div>
+          <div><dt>회복 퀘스트</dt><dd>${esc(s.quest)}</dd></div>
+          <div><dt>지속 시간</dt><dd>일시적 · 상태는 지나가요</dd></div>
+        </dl>
+      </div>
+    </article>`;
+  }
+
+  // Shrink a photo to fit comfortably inside one Firestore document.
+  function photoToDataUrl(file) {
+    return new Promise((resolve, reject) => {
+      if (!file || !/^image\//.test(file.type)) { reject(new Error('type')); return; }
+      const url = URL.createObjectURL(file);
+      const img = new Image();
+      img.onload = () => {
+        const r = Math.min(1, 1080 / Math.max(img.width, img.height));
+        const cv = document.createElement('canvas');
+        cv.width = Math.round(img.width * r);
+        cv.height = Math.round(img.height * r);
+        const ctx = cv.getContext('2d');
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(0, 0, cv.width, cv.height);
+        ctx.drawImage(img, 0, 0, cv.width, cv.height);
+        URL.revokeObjectURL(url);
+        // Firestore documents cap at 1 MiB; keep the base64 photo under ~700 KB to leave room.
+        const LIMIT = 700000;
+        let q = 0.85;
+        let out = cv.toDataURL('image/jpeg', q);
+        while (out.length > LIMIT && q > 0.4) { q -= 0.08; out = cv.toDataURL('image/jpeg', q); }
+        if (out.length > LIMIT) reject(new Error('big')); else resolve(out);
+      };
+      img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('load')); };
+      img.src = url;
+    });
   }
 
   /* ---------- views ---------- */
@@ -213,10 +259,10 @@
       <section class="wrap section split">
         <div>
           <h2 class="sec-title">요즘 어때요? 한 줄이면 돼요</h2>
-          <p class="sub">"나 우울증인가 봐" 대신 "요즘 잠을 못 자서 피곤해"처럼요. 상태카드를 만들어 링크를 보내면 친구들이 선물상자에 한마디씩 넣어 줘요.</p>
+          <p class="sub">"나 우울증인가 봐" 대신 "요즘 잠을 못 자서 피곤해"처럼요. 사진과 한마디로 꾸민 상태카드를 보내면 친구들이 선물상자에 한마디씩 넣어 줘요.</p>
           <a class="btn primary" href="#/state">상태카드 만들기</a>
         </div>
-        ${stateCardHtml(STATES[0], '예시', '요즘 바빠서 잠을 많이 못 자서 피곤하다')}
+        ${cardHtml({ nick: '예시', text: '요즘 바빠서 잠을 많이 못 자서 피곤하다', cap: '오늘은 일찍 잘 거야', theme: 'p2', labels: ['glass', 'introvert'] })}
       </section>
 
       <section class="wrap section" style="margin-bottom:88px">
@@ -384,7 +430,7 @@
           <button class="btn primary" id="shareRes" type="button">친구에게 공유하기</button>
           <div class="next-links">
             <a href="#/board/${picked[0].id}">'${esc(picked[0].name)}' 라벨을 가진 사람들의 포스트잇 →</a>
-            <a href="#/state">라벨 대신 상태카드 만들기 →</a>
+            <a href="#/state">고른 라벨로 상태카드 꾸미기 →</a>
             <a href="#/learn">강연·교육 보기 →</a>
           </div>
         </section>
@@ -619,7 +665,7 @@
       html: `
       <section class="wrap narrow view">
         <h1 class="page-title">요즘 어때요?</h1>
-        <p class="sub">"나 우울증인가 봐" 대신 "요즘 잠을 못 자서 피곤해"처럼 지금 상태를 적어 보세요. 상태는 지나가니까요.</p>
+        <p class="sub">"나 우울증인가 봐" 대신 "요즘 잠을 못 자서 피곤해"처럼 지금 상태를 적어 보세요. 사진과 한마디로 카드를 꾸밀 수도 있어요.</p>
         <form id="stForm" class="form">
           <div class="field">
             <label class="field-label" for="nick">닉네임</label>
@@ -630,36 +676,87 @@
             <textarea id="st" name="st" maxlength="80" required placeholder="지금 내 상태를 한두 문장으로 적어보세요"></textarea>
             <div class="chips">${examples.map((t) => `<button type="button" class="chip" data-t="${esc(t)}">${esc(t)}</button>`).join('')}</div>
           </div>
-          <button class="btn primary wide" type="submit">상태카드 만들기</button>
+          <div class="field">
+            <span class="field-label">기분 사진 (선택)</span>
+            <div class="photo-row">
+              <input type="file" id="photo" accept="image/*" class="sr-only">
+              <label class="btn ghost" for="photo">사진 고르기</label>
+              <button type="button" class="btn ghost" id="photoClear" hidden>사진 빼기</button>
+            </div>
+            <p class="field-hint">사진은 작게 줄여서 상태방에 함께 저장돼요. 얼굴이나 개인정보가 보이는 사진은 피해 주세요.</p>
+          </div>
+          <div class="field">
+            <label class="field-label" for="cap">사진 아래 한마디 (선택)</label>
+            <input type="text" id="cap" name="cap" maxlength="40" placeholder="예) 오늘은 일찍 잘 거야" autocomplete="off">
+          </div>
+          <fieldset>
+            <legend>나를 설명하는 라벨 (최대 3개, 선택)</legend>
+            <p class="field-hint">카드에는 부드러운 말로 바뀌어 들어가요. 예) 우울증 → 마음이 무거운 요즘</p>
+            <div class="pick-grid small">${LABELS.map((l, i) => `<button type="button" class="pick sticker c-${l.color}" style="--r:${rot(i)}deg" data-id="${l.id}" aria-pressed="false">${esc(l.name)}</button>`).join('')}</div>
+          </fieldset>
+          <fieldset><legend>카드 색</legend>${colorPicker('theme', '카드 색')}</fieldset>
+          <h2 class="preview-title">미리보기</h2>
+          <div id="cardOut"></div>
+          <div id="crisis2" hidden></div>
+          <button class="btn primary wide" type="submit">상태방 만들고 공유하기</button>
         </form>
-        <div id="crisis2" hidden></div>
-        <div id="cardOut"></div>
       </section>`,
       mount() {
         const form = $('#stForm');
-        $$('.chip').forEach((c) => c.addEventListener('click', () => { form.st.value = c.dataset.t; form.st.focus(); }));
-        form.addEventListener('submit', (e) => {
+        let img = '';
+        let labels = Store.get('picked', []).filter(byId).slice(0, MAX_PICK);
+        const draw = () => {
+          $('#cardOut').innerHTML = cardHtml({
+            nick: form.nick.value.trim() || '나',
+            text: form.st.value.trim() || '지금 내 상태를 적어 보세요',
+            img, cap: form.cap.value.trim(), theme: form.theme.value, labels,
+          });
+        };
+        const syncLabels = () => $$('.pick', form).forEach((b) => b.setAttribute('aria-pressed', labels.includes(b.dataset.id)));
+        syncLabels();
+        draw();
+        form.addEventListener('input', draw);
+        form.addEventListener('change', draw);
+        $$('.chip', form).forEach((c) => c.addEventListener('click', () => { form.st.value = c.dataset.t; draw(); }));
+        $$('.pick', form).forEach((b) => b.addEventListener('click', () => {
+          const lid = b.dataset.id;
+          if (labels.includes(lid)) labels = labels.filter((x) => x !== lid);
+          else if (labels.length >= MAX_PICK) { toast('라벨은 3개까지 담을 수 있어요'); return; }
+          else labels.push(lid);
+          Store.set('picked', labels);
+          syncLabels();
+          draw();
+        }));
+        $('#photo').addEventListener('change', async (e) => {
+          const file = e.target.files[0];
+          e.target.value = '';
+          if (!file) return;
+          try {
+            img = await photoToDataUrl(file);
+            $('#photoClear').hidden = false;
+            draw();
+          } catch (err) {
+            toast(err.message === 'type' ? '사진 파일만 올릴 수 있어요' : '이 사진은 불러오지 못했어요. 다른 사진으로 해 주세요.');
+          }
+        });
+        $('#photoClear').addEventListener('click', () => { img = ''; $('#photoClear').hidden = true; draw(); });
+        form.addEventListener('submit', async (e) => {
           e.preventDefault();
           const nick = form.nick.value.trim();
           const text = form.st.value.trim();
           if (!nick || !text) return;
-          const s = STATES.find((x) => x.re.test(text));
-          showCrisis(text, $('#crisis2'));
-          $('#cardOut').innerHTML = `${stateCardHtml(s, nick, text)}
-            <div class="btn-row"><button class="btn primary" id="mkSpace" type="button">내 상태방 만들고 공유하기</button></div>`;
-          $('#mkSpace').addEventListener('click', async (ev) => {
-            const btn = ev.currentTarget;
-            btn.disabled = true;
-            const space = { id: uid() + uid(), nick, text, k: s.key, t: Date.now() };
-            try {
-              await Api.saveSpace(space);
-              location.hash = `#/space/${space.id}`;
-            } catch {
-              btn.disabled = false;
-              toast('상태방을 만들지 못했어요. 인터넷 연결을 확인하고 다시 눌러 주세요.');
-            }
-          });
-          $('#cardOut').scrollIntoView({ behavior: 'smooth', block: 'start' });
+          const cap = form.cap.value.trim();
+          showCrisis(`${text} ${cap}`, $('#crisis2'));
+          const btn = form.querySelector('[type=submit]');
+          btn.disabled = true;
+          const space = { id: uid() + uid(), nick, text, k: stateOf(text).key, t: Date.now(), img, cap, theme: form.theme.value, labels };
+          try {
+            await Api.saveSpace(space);
+            location.hash = `#/space/${space.id}`;
+          } catch {
+            btn.disabled = false;
+            toast('상태방을 만들지 못했어요. 인터넷 연결을 확인하고 다시 눌러 주세요.');
+          }
         });
       },
     };
@@ -691,10 +788,9 @@
   function spaceView(s) {
     const id = s.id;
     const mine = Api.isMine(id);
-    const state = STATES.find((x) => x.key === s.k) || STATES[STATES.length - 1];
     const shareUrl = isShared()
       ? `${baseUrl()}#/space/${id}`
-      : `${baseUrl()}#/space/${id}?d=${encode({ id, nick: s.nick, text: s.text, k: s.k, t: s.t })}`;
+      : `${baseUrl()}#/space/${id}?d=${encode({ id, nick: s.nick, text: s.text, k: s.k, t: s.t, cap: s.cap, theme: s.theme, labels: s.labels })}`;
     const quick = ['오늘도 고생 많았어', '너는 생각보다 훨씬 잘하고 있어', '푹 자고 나면 조금 나아질 거야', '힘들면 언제든 연락해'];
 
     return {
@@ -704,7 +800,7 @@
           <h1 class="page-title">${esc(s.nick)}님의 상태방</h1>
           <p class="sub">${mine ? '링크를 보내면 친구들이 여기에 한마디씩 남겨 줘요.' : '요즘 이렇대요. 한마디 남겨 주세요.'}</p>
         </div>
-        ${stateCardHtml(state, s.nick, s.text)}
+        ${cardHtml(s)}
         ${mine ? `<div class="share-box"><p>"내 상태방에 따뜻한 한마디 남겨줘"</p><div class="btn-row" style="justify-content:center"><button class="btn primary" id="shareSp" type="button">링크 공유하기</button><button class="btn ghost" id="copySp" type="button">링크 복사</button></div></div>` : ''}
 
         <section class="paper">
