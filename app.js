@@ -444,15 +444,6 @@
         </div>
       </section>
 
-      <section class="wrap section">
-        <div class="criteria">
-          <h2>병원에서 먼저 묻는 세 가지</h2>
-          <div class="crit-pills"><span>언제부터?</span><span>얼마나 자주?</span><span>생활이 흔들렸나?</span></div>
-          <p>체크리스트에 몇 개 해당되는지는 그다음 문제예요. 의사들은 그 상태가 얼마나 오래 갔는지, 얼마나 자주 그런지, 그것 때문에 학교나 일, 사람 관계가 얼마나 힘들어졌는지를 먼저 봐요.</p>
-          <a class="btn glow" href="#/learn">관련 영상 보기</a>
-        </div>
-      </section>
-
       <section class="wrap section split">
         <div>
           <h2 class="sec-title">요즘 어때요? 한 줄이면 돼요</h2>
@@ -460,6 +451,15 @@
           <a class="btn primary" href="#/state">상태카드 만들기</a>
         </div>
         ${cardHtml({ nick: '예시', text: '요즘 바빠서 잠을 많이 못 자서 피곤하다', cap: '오늘은 일찍 잘 거야', theme: 'p2', labels: ['glass', 'introvert'] })}
+      </section>
+
+      <section class="wrap section">
+        <div class="criteria">
+          <h2>병원에서 먼저 묻는 세 가지</h2>
+          <div class="crit-pills"><span>언제부터?</span><span>얼마나 자주?</span><span>생활이 흔들렸나?</span></div>
+          <p>체크리스트에 몇 개 해당되는지는 그다음 문제예요. 의사들은 그 상태가 얼마나 오래 갔는지, 얼마나 자주 그런지, 그것 때문에 학교나 일, 사람 관계가 얼마나 힘들어졌는지를 먼저 봐요.</p>
+          <a class="btn glow" href="#/learn">관련 영상 보기</a>
+        </div>
       </section>
 
       <section class="wrap section" style="margin-bottom:88px">

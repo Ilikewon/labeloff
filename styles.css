@@ -96,7 +96,7 @@ button { font-family: inherit; }
 .wrap { width: 100%; max-width: 1080px; margin: 0 auto; padding: 0 20px; }
 .narrow { max-width: 680px; }
 .view { padding-top: 40px; padding-bottom: 72px; }
-.section { margin-top: 88px; }
+.section { margin-top: clamp(112px, 13vw, 160px); }
 
 /* header */
 .top {
