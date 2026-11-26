@@ -204,7 +204,7 @@ const LECTURES = [
   { url: 'https://www.youtube.com/watch?v=E-WRpKFPjAw', title: '지식채널e - 어느날 갑자기 나에게', kind: '공공 캠페인', by: '국가인권위원회 · EBS 지식채널e (배리어프리 버전)', labels: ['gold', 'looks'], desc: '정신적 어려움은 누구에게나 갑자기 찾아올 수 있고, 때로는 낙인과 편견이 더 아프다는 이야기예요. 누군가를 "금쪽이"라 부르며 웃기 전에 생각해 볼 거리를 줘요.' },
   { url: 'https://www.youtube.com/watch?v=bGDaGhqHsp8', title: "'여성정병러' 자조모임이 있다고? (리단 작가 북토크 2부)", kind: '북토크', by: '정신의학신문 · 「정신병의 나라에서 왔습니다」 리단 작가', labels: ['looks', 'glass', 'gold'], desc: '"정병러"라는 말이 SNS에서 어떻게 생겨나 퍼졌는지, 실제로 아픈 당사자들은 이 말을 어떻게 쓰고 서로 돕는지 들어봐요.' },
   { url: 'https://www.youtube.com/watch?v=c3IM5A7Qzs0', title: '정신과 진료를 받는다고 정신병인가요?', kind: '의학 채널', by: '의학채널 비온뒤 · 마인드랩공간정신건강의학과 이광민 원장', labels: ['depression', 'anxiety', 'looks', 'glass'], desc: '"정병" 소리를 들을까 봐 정신과 문턱을 넘기 망설이는 사람에게, 진료를 받는 것과 정신병이 같은 말이 아니라고 짚어줘요.' },
-  { url: 'https://guidance.cau.ac.kr/', art: 'counsel', title: '우리 학교 상담센터, 이렇게 이용해요', kind: '학교 상담센터', by: '중앙대학교 학생생활상담센터 · 서울 02-820-6363 · 다빈치(안성) 031-670-3398', labels: [], desc: '라벨을 떼고 나서 "진짜 이야기해 보고 싶다"면 가장 가까운 곳부터. 개인상담, 심리검사, 집단상담을 신청할 수 있어요. 다빈치캠퍼스는 counseling.cau.ac.kr에서 신청해요.' },
+  { url: 'https://guidance.cau.ac.kr/', art: 'counsel', title: '우리 학교 상담센터, 이렇게 이용해요', kind: '학교 상담센터', by: '중앙대학교 학생생활상담센터 · 서울 02-820-6363 · 다빈치(안성) 031-670-3398', labels: [], desc: '"진짜 이야기해 보고 싶다"면 가장 가까운 곳부터. 개인상담, 심리검사, 집단상담을 신청할 수 있어요. 다빈치캠퍼스는 counseling.cau.ac.kr에서 신청해요.' },
 ];
 
 const SEED_BOARD = {

@@ -373,7 +373,7 @@
     ctx.textAlign = 'left';
     ctx.font = `900 46px ${FONT}`;
     const lw = ctx.measureText('LABEL').width;
-    const ow = ctx.measureText('OFF').width + 28;
+    const ow = ctx.measureText('NOTE').width + 28;
     const lx = W / 2 - (lw + 10 + ow) / 2;
     ctx.fillStyle = '#F5EEDD';
     ctx.fillText('LABEL', lx, by);
@@ -382,7 +382,7 @@
     ctx.rotate(-0.1);
     ctx.fillStyle = '#FFF8E8'; roundRect(ctx, -ow / 2 - 4, -34, ow + 8, 68, 12); ctx.fill();
     ctx.fillStyle = '#C8372D'; roundRect(ctx, -ow / 2, -30, ow, 60, 10); ctx.fill();
-    ctx.fillStyle = '#FFF8E8'; ctx.textAlign = 'center'; ctx.fillText('OFF', 0, 16);
+    ctx.fillStyle = '#FFF8E8'; ctx.textAlign = 'center'; ctx.fillText('NOTE', 0, 16);
     ctx.restore();
     ctx.textAlign = 'center';
     ctx.fillStyle = '#F5EEDD';
@@ -635,7 +635,7 @@
       mount() {
         $$('.peel').forEach(mountPeel);
         $('#shareRes').addEventListener('click', () => share({
-          title: '라벨오프',
+          title: '라벨노트',
           text: `나 방금 '${picked.map((l) => l.name).join("', '")}' 라벨 제대로 알아보고 왔어. 너한테는 어떤 라벨이 붙어있어? (12월 31일까지만 열려)`,
           url: baseUrl(),
         }));
@@ -974,7 +974,7 @@
           $('#spaceRoot').innerHTML = '<div class="empty"><h1 class="page-title">상태방을 찾을 수 없어요</h1><p class="sub">링크가 정확한지 확인해 주세요.</p><a class="btn primary" href="#/">처음으로</a></div>';
           return;
         }
-        document.title = `${s.nick}님의 상태방 · 라벨오프`;
+        document.title = `${s.nick}님의 상태방 · 라벨노트`;
         const v = spaceView(s);
         $('#spaceRoot').innerHTML = v.html;
         v.mount();
@@ -1033,12 +1033,12 @@
           $('#shareSp').addEventListener('click', () => share({ title: `${s.nick}님의 상태방`, text, url: shareUrl }));
           // Build the story image up front: the share sheet must open inside the tap, with no slow work before it.
           let storyFile = null;
-          storyImage(s).then((b) => { storyFile = new File([b], 'labeloff-story.png', { type: 'image/png' }); }, () => {});
+          storyImage(s).then((b) => { storyFile = new File([b], 'labelnote-story.png', { type: 'image/png' }); }, () => {});
           const notReady = () => toast('스토리 이미지를 만드는 중이에요. 잠시 후 다시 눌러 주세요.');
           const saveStory = () => {
             const a = document.createElement('a');
             a.href = URL.createObjectURL(storyFile);
-            a.download = 'labeloff-story.png';
+            a.download = 'labelnote-story.png';
             document.body.appendChild(a);
             a.click();
             setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
@@ -1198,7 +1198,7 @@
     app.innerHTML = v.html;
     if (v.mount) v.mount();
     const t = pageTitle(r, a, closed);
-    document.title = t ? `${t} · 라벨오프` : '라벨오프 — 붙이기 전에, 제대로 알기';
+    document.title = t ? `${t} · 라벨노트` : '라벨노트 — 붙이기 전에, 제대로 알기';
     $$('.nav a').forEach((el) => el.classList.toggle('on', el.dataset.r === NAV_OF[r]));
     window.scrollTo(0, 0);
   }
